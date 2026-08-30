@@ -1,0 +1,106 @@
+package nv.utils;
+
+import nv.core.NvContext;
+import nv.core.Updatable;
+import nv.core.annotations.ReadyComponent;
+
+/**
+ * A timer that can be used to track time or execute actions after a certain amount of time.
+ * <p>Shouldn't be modified, extend if needed</p>
+ * @since 1.0
+ * @author Andrea Maruca
+ */
+@ReadyComponent
+@SuppressWarnings("unused")
+public class NvTimer implements Updatable {
+    private float remaining;
+    private float fullRemaining;
+    private boolean finished;
+    private boolean started;
+    private boolean loop;
+    private Runnable onFinished;
+    private NvContext context;
+
+    public NvTimer(long milliseconds) {
+        remaining =  milliseconds/1000f;
+        fullRemaining =  milliseconds/1000f;
+    }
+
+    public NvTimer(long milliseconds, Runnable onFinished) {
+        this(milliseconds);
+        this.onFinished = onFinished;
+    }
+
+    public boolean isInLoop() {
+        return loop;
+    }
+
+    public void setIsLoop(boolean loop){
+        this.loop = loop;
+    }
+
+    public void setOnFinished(Runnable onFinished) {
+        this.onFinished = onFinished;
+    }
+
+    public void setDuration(long milliseconds){
+        remaining =  milliseconds/1000f;
+        fullRemaining =  milliseconds/1000f;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public boolean isStarted() {
+        return started;
+    }
+
+    public float getRemaining() {
+        return remaining;
+    }
+
+    public void start(){
+        started = true;
+    }
+    public void stop(){
+        started = false;
+    }
+    public void reset(){
+        remaining = fullRemaining;
+        finished = false;
+        started = false;
+    }
+    @Override
+    public void update(float dt) {
+        if(finished || !started)
+            return;
+        remaining -= dt;
+        if(remaining <= 0){
+            finished = true;
+            started = false;
+            if(onFinished != null)
+                onFinished.run();
+            if(loop){
+                reset();
+                start();
+            }
+        }
+    }
+
+    @Override
+    public boolean isActive() {
+        return started && !finished;
+    }
+
+    @Override
+    public String toString(){
+        return "NvTimer{" +
+                "remaining=" + remaining +
+                ", fullRemaining=" + fullRemaining +
+                ", finished=" + finished +
+                ", started=" + started +
+                '}';
+    }
+
+}
