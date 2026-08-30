@@ -1,27 +1,35 @@
 import nv.core.ContextBuilder;
 import nv.core.NvContext;
-import nv.core.ScreenSize;
+import nv.utils.camera.NvControlledCamera;
+import render.BedrockRenderer;
+import scan.AsyncScanner;
+import scan.BedrockNode;
 
 import java.awt.*;
 
+import static nv.core.errors.NvLogger.logInfo;
+
 void main() {
     // builds the game
-    NvContext context = new ContextBuilder("START", true /*, new Dimension(800, 800)*/) // <- app/game name
+    NvContext context = new ContextBuilder("START", true)
             .setVsync(true)
-//          .setInternalResolution(ScreenSize._1920x1080) for specific uses
-//          .setFpsLimit(30)
             .setIdleWhenUnfocused(true)
-//          .configurePostProcess((settings) -> { for post processing
-//             settings.presetVHS();
-//          })
             .build();
-    // first page
+
+    context.changeFont(new Font("monospaced", Font.PLAIN, 50));
     var page = context.newPage();
     page.setBackgroundColor(0,0,0);
 
-    //Add your components here using page.addChild([the component]);
-    //it will be drawn and updated automatically
+    AsyncScanner scanner = new AsyncScanner(32);
+    try {
+        BedrockNode node = scanner.scan(Path.of("/Users/andreamaruca/Desktop/progetti/java/Bedrock"));
+        var renderer = new BedrockRenderer(node);
+        page.addChild(renderer);
+        new NvControlledCamera(context.getRenderWidth()/2,context.getRenderHeight()/2,2000);
+    }catch (Exception e) {
+        scanner.shutdown();
+    }
 
-    // run the game
-    context.run(); //  (don't put anything after this line, it won't be executed until the end)
+    context.run();
+    scanner.shutdown();
 }
