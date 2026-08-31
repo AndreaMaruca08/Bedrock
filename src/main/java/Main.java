@@ -5,6 +5,7 @@ import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import render.BedrockRenderer;
 import render.ChoiceButton;
 import render.ChosenDirEvent;
+import render.InfoDisplay;
 import scan.AsyncScanner;
 import scan.BedrockNode;
 
@@ -32,12 +33,16 @@ void main() {
         BedrockNode root = scanner.scan(Path.of(path));
         var renderer = new BedrockRenderer(root);
         page.addChild(renderer);
+        var infoDisplay = new InfoDisplay(renderer.getW() + 50,0,context.getRenderWidth(),root.children.size()*60,root);
+        page.addChild(infoDisplay);
 
         context.events().on(ChosenDirEvent.class, (event) -> {
             if(event.path() != null) {
                 try {
                     var newRoot = scanner.scan(Path.of(event.path()));
                     renderer.reset(newRoot);
+                    infoDisplay.reset(newRoot);
+
                     NvContext.markSceneDirty();
                 } catch (Exception e ){
                     logWarn("Error resetting: " + e.getMessage());
@@ -47,6 +52,7 @@ void main() {
 
         page.addChild(new ChoiceButton(0,-100,550,100));
     }catch (Exception e) {
+        logWarn("Error in main scan: " + e.getMessage());
         scanner.shutdown();
     }
 

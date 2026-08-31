@@ -74,13 +74,14 @@ tasks.withType(JavaExec) {
 //    systemProperty 'org.lwjgl.util.DebugLoader', 'true'
 //    systemProperty 'org.lwjgl.system.linker.debug', 'true'
 }
+
 tasks.named('jar') {
     manifest {
         attributes('Main-Class': 'Main')
     }
 }
 
-project.ext.lwjglModules = ['lwjgl', 'lwjgl-glfw', 'lwjgl-openal', 'lwjgl-stb']
+project.ext.lwjglModules = ['lwjgl', 'lwjgl-glfw', 'lwjgl-openal', 'lwjgl-stb', 'lwjgl-tinyfd']
 
 Configuration makeNativesConfig(String platform) {
     def safeName = "natives_${platform.replace('-', '_')}"
@@ -471,8 +472,8 @@ launch4j {
     icon = "${project.projectDir}/src/main/resources/gameicon/gameIcon.ico"
     jvmOptions = [
             '--enable-native-access=ALL-UNNAMED',
-            '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
-            '--add-opens', 'java.base/sun.misc=ALL-UNNAMED'
+            '--add-opens=java.base/java.lang=ALL-UNNAMED',
+            '--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED'
     ]
     outputDir = "dist/${project.name}"
     libraryDir = '.'

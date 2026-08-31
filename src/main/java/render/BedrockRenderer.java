@@ -87,8 +87,24 @@ public class BedrockRenderer extends NvComp implements Clickable {
     }
 
     private String formatNode(BedrockNode node){
-        return "|"+(node.isDirectory ? "DIR" : "FILE")+"|Name: " + node.name + " | ByteSize: " + node.totalSize +
+        return "|"+(node.isDirectory ? "DIR" : "FILE")+"|Name: " + node.name + " | ByteSize: " + formatByte(node.totalSize) +
                 (node.children == null ? "" : " | Inner files/dir: " + node.children.size());
+    }
+    public static String formatByte(long byteSize) {
+        if (byteSize < 1024) {
+            return byteSize + " B";
+        }
+
+        String[] units = {"KB", "MB", "GB", "TB", "PB"};
+        double size = byteSize;
+        int unitIndex = -1;
+
+        while (size >= 1024 && unitIndex < units.length - 1) {
+            size /= 1024;
+            unitIndex++;
+        }
+
+        return String.format("%.2f %s", size, units[unitIndex]);
     }
 
     private int getOrComputeHue(BedrockNode node) {

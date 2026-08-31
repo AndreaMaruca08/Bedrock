@@ -37,6 +37,7 @@ public class AsyncScanner {
             return root;
         }
 
+        long total = 0;
         for (Path file : topLevelFiles) {
             try {
                 long size = Files.size(file);
@@ -45,8 +46,8 @@ public class AsyncScanner {
                 fileNode.totalSize = size;
                 fileNode.parent = root;
                 root.children.add(fileNode);
-            } catch (IOException ignored) {
-            }
+                total += size;
+            } catch (IOException ignored) {}
         }
 
         List<Future<BedrockNode>> futures = new ArrayList<>();
@@ -54,16 +55,13 @@ public class AsyncScanner {
             futures.add(pool.submit(() -> scanSubtree(dir)));
         }
 
-        long total = 0;
-        for (int i = 0; i < futures.size(); i++) {
-            BedrockNode child = futures.get(i).get();
+        for (Future<BedrockNode> future : futures) {
+            BedrockNode child = future.get();
             child.parent = root;
             root.children.add(child);
             total += child.totalSize;
         }
-        for (BedrockNode f : root.children) {
-            if (!f.isDirectory) total += 0;
-        }
+
         root.totalSize = total;
 
         return root;
