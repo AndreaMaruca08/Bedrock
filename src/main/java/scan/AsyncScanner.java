@@ -34,10 +34,9 @@ public class AsyncScanner {
                 }
             }
         } catch (IOException e) {
-            return root; // root illeggibile, restituisci vuoto
+            return root;
         }
 
-        // file diretti nella root
         for (Path file : topLevelFiles) {
             try {
                 long size = Files.size(file);
@@ -47,11 +46,9 @@ public class AsyncScanner {
                 fileNode.parent = root;
                 root.children.add(fileNode);
             } catch (IOException ignored) {
-                // permission denied o file rimosso durante lo scan
             }
         }
 
-        // una task per ogni sottocartella di primo livello
         List<Future<BedrockNode>> futures = new ArrayList<>();
         for (Path dir : topLevelDirs) {
             futures.add(pool.submit(() -> scanSubtree(dir)));
@@ -65,7 +62,7 @@ public class AsyncScanner {
             total += child.totalSize;
         }
         for (BedrockNode f : root.children) {
-            if (!f.isDirectory) total += 0; // già sommati sopra, evita doppio conteggio
+            if (!f.isDirectory) total += 0;
         }
         root.totalSize = total;
 

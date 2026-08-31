@@ -11,7 +11,7 @@ import static nv.core.errors.NvLogger.logInfo;
 
 void main() {
     // builds the game
-    NvContext context = new ContextBuilder("START", true)
+    NvContext context = new ContextBuilder("Bedrock", true)
             .setVsync(true)
             .setIdleWhenUnfocused(true)
             .build();
@@ -22,10 +22,11 @@ void main() {
 
     AsyncScanner scanner = new AsyncScanner(32);
     try {
-        BedrockNode node = scanner.scan(Path.of("/Users/andreamaruca/Desktop/progetti/java/Bedrock"));
+        new NvControlledCamera(context.getRenderWidth()/2,context.getRenderHeight()/2,2000);
+
+        BedrockNode node = scanner.scan(Path.of("/Users/andreamaruca/"));
         var renderer = new BedrockRenderer(node);
         page.addChild(renderer);
-        new NvControlledCamera(context.getRenderWidth()/2,context.getRenderHeight()/2,2000);
     }catch (Exception e) {
         scanner.shutdown();
     }
