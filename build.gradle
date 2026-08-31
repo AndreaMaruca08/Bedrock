@@ -48,6 +48,11 @@ repositories {
 //Put your project dependencies here
 dependencies {
     implementation project(':engine') //do not remove or change
+
+    implementation platform("org.lwjgl:lwjgl-bom:${lwjglVersion}")
+    implementation "org.lwjgl:lwjgl-tinyfd"
+    runtimeOnly "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:${lwjglNatives}"
+
 }
 
 sourceSets {

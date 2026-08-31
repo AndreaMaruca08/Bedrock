@@ -11,8 +11,9 @@ public class BedrockNode {
     public BedrockNode parent;
     public List<BedrockNode> children;
     public long lastModified;
+    public int cachedHue = -1;
 
-    BedrockNode(String name, boolean isDirectory) {
+    public BedrockNode(String name, boolean isDirectory) {
         this.name = name;
         this.isDirectory = isDirectory;
         this.children = isDirectory ? new ArrayList<>() : null;

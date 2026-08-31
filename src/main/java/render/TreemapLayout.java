@@ -20,16 +20,14 @@ public class TreemapLayout {
         result.add(new Rect(x, y, w, h, node));
 
         if (node.children == null || node.children.isEmpty()) return;
-        if (w * h < MIN_PIXEL_AREA) return; // cutoff: troppo piccolo, non scendere oltre
+        if (w * h < MIN_PIXEL_AREA) return;
 
-        // ordina per size decrescente (fondamentale per l'algoritmo)
         List<BedrockNode> sorted = new ArrayList<>(node.children);
         sorted.sort((a, b) -> Long.compare(b.totalSize, a.totalSize));
 
         float totalArea = w * h;
-        long totalSize = node.totalSize == 0 ? 1 : node.totalSize; // evita divisione per zero
+        long totalSize = node.totalSize == 0 ? 1 : node.totalSize;
 
-        // converti size -> area assegnata
         float[] areas = new float[sorted.size()];
         for (int i = 0; i < sorted.size(); i++) {
             areas[i] = (sorted.get(i).totalSize / (float) totalSize) * totalArea;
@@ -43,7 +41,7 @@ public class TreemapLayout {
         int n = children.size();
         if (startIdx >= n) return;
 
-        float L = Math.min(w, h); // lato corto disponibile per la riga
+        float L = Math.min(w, h);
         List<Integer> row = new ArrayList<>();
         row.add(startIdx);
         float rowSum = areas[startIdx];
@@ -62,15 +60,14 @@ public class TreemapLayout {
             i++;
         }
 
-        // disegna la riga corrente e calcola lo spazio rimanente
-        boolean horizontal = w >= h; // riempiamo lungo il lato lungo
-        float rowThickness = rowSum / L; // quanto spazio "consuma" questa riga
+        boolean horizontal = w >= h;
+        float rowThickness = rowSum / L;
 
         float rx = x, ry = y;
         for (int idx : row) {
             BedrockNode child = children.get(idx);
             float area = areas[idx];
-            float length = area / rowThickness; // lato lungo del singolo rettangolo
+            float length = area / rowThickness;
 
             if (horizontal) {
                 squarify(child, rx, ry, rowThickness, length);
@@ -81,7 +78,6 @@ public class TreemapLayout {
             }
         }
 
-        // spazio rimanente dopo aver tolto la riga appena disegnata
         float nx = horizontal ? x + rowThickness : x;
         float ny = horizontal ? y : y + rowThickness;
         float nw = horizontal ? w - rowThickness : w;

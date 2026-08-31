@@ -71,8 +71,11 @@ public class AsyncScanner {
 
     private BedrockNode scanSubtree(Path dirPath) {
         Deque<BedrockNode> stack = new ArrayDeque<>();
+        Deque<Path> pathStack = new ArrayDeque<>();
+
         BedrockNode subRoot = new BedrockNode(dirPath.getFileName().toString(), true);
         stack.push(subRoot);
+        pathStack.push(dirPath);
 
         try {
             Files.walkFileTree(dirPath, new SimpleFileVisitor<Path>() {
@@ -80,12 +83,13 @@ public class AsyncScanner {
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
                     if (dir.equals(dirPath)) {
-                        return FileVisitResult.CONTINUE; // già creato come subRoot
+                        return FileVisitResult.CONTINUE;
                     }
                     BedrockNode node = new BedrockNode(dir.getFileName().toString(), true);
                     node.parent = stack.peek();
                     stack.peek().children.add(node);
                     stack.push(node);
+                    pathStack.push(dir);
                     return FileVisitResult.CONTINUE;
                 }
 
@@ -102,25 +106,31 @@ public class AsyncScanner {
                 @Override
                 public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
                     if (dir.equals(dirPath) && stack.size() == 1) {
-                        return FileVisitResult.CONTINUE; // subRoot si chiude fuori dal visitor
+                        return FileVisitResult.CONTINUE;
                     }
-                    BedrockNode finished = stack.pop();
-                    long sum = finished.ownSize;
-                    for (BedrockNode child : finished.children) sum += child.totalSize;
-                    finished.totalSize = sum;
+                    closeNode();
                     return FileVisitResult.CONTINUE;
                 }
 
                 @Override
                 public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                    if (!pathStack.isEmpty() && pathStack.peek().equals(file)) {
+                        closeNode();
+                    }
                     return FileVisitResult.CONTINUE;
+                }
+
+                private void closeNode() {
+                    BedrockNode finished = stack.pop();
+                    pathStack.pop();
+                    long sum = finished.ownSize;
+                    for (BedrockNode child : finished.children) sum += child.totalSize;
+                    finished.totalSize = sum;
                 }
             });
         } catch (IOException e) {
-            // errore di I/O non gestito dal visitor, il sottoalbero resta parziale
         }
 
-        // chiudi subRoot manualmente (non passa da postVisitDirectory)
         long sum = subRoot.ownSize;
         for (BedrockNode child : subRoot.children) sum += child.totalSize;
         subRoot.totalSize = sum;
