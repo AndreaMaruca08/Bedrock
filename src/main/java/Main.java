@@ -33,7 +33,7 @@ void main() {
         BedrockNode root = scanner.scan(Path.of(path));
         var renderer = new BedrockRenderer(root);
         page.addChild(renderer);
-        var infoDisplay = new InfoDisplay(renderer.getW() + 50,0,context.getRenderWidth(),root.children.size()*60,root);
+        var infoDisplay = new InfoDisplay(renderer.getW() + 50,0,context.getRenderWidth(),3000,root);
         page.addChild(infoDisplay);
 
         context.events().on(ChosenDirEvent.class, (event) -> {

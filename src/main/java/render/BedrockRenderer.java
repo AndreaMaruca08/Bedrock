@@ -27,7 +27,7 @@ public class BedrockRenderer extends NvComp implements Clickable {
         clickedInfo = new TopInfo(10,100);
         clickedInfo.setTextScale(0.5f);
         clickedInfo.changeText(formatNode(node));
-        info.changeText("Currently in: "+node.name);
+        info.changeText("Currently in: "+node.name + " | " + formatByte(node.totalSize));
         addChild(clickedInfo);
         addChild(info);
         rects = new TreemapLayout().layout(node, getX(), getY(), getW(), getH());
@@ -107,7 +107,7 @@ public class BedrockRenderer extends NvComp implements Clickable {
         return String.format("%.2f %s", size, units[unitIndex]);
     }
 
-    private int getOrComputeHue(BedrockNode node) {
+    public static int getOrComputeHue(BedrockNode node) {
         if (node.cachedHue >= 0) return node.cachedHue;
         int parentHue = node.parent != null ? getOrComputeHue(node.parent) : 0;
         int combined = 31 * parentHue + node.name.hashCode();
