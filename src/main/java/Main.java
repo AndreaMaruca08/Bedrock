@@ -1,5 +1,6 @@
 import nv.core.ContextBuilder;
 import nv.core.NvContext;
+import nv.core.ScreenSize;
 import nv.utils.camera.NvControlledCamera;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import render.BedrockRenderer;
@@ -20,7 +21,7 @@ void main() {
             .setIdleWhenUnfocused(true)
             .build();
 
-    context.changeFont(new Font("monospaced", Font.PLAIN, 50));
+    context.changeFont(new Font("monospaced", Font.PLAIN, (int) (context.getRenderWidth()*0.015f)));
     var page = context.newPage();
     page.setBackgroundColor(0,0,0);
 
@@ -50,7 +51,7 @@ void main() {
             }
         });
 
-        page.addChild(new ChoiceButton(0,-100,550,100));
+        page.addChild(new ChoiceButton(0,-100,context.getRenderWidth()*0.30f,context.getRenderHeight()*0.03f));
     }catch (Exception e) {
         logWarn("Error in main scan: " + e.getMessage());
         scanner.shutdown();

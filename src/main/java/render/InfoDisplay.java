@@ -1,5 +1,6 @@
 package render;
 
+import nv.core.NvContext;
 import nv.core.components.NvComp;
 import nv.core.graphic.NvGraphic;
 import scan.BedrockNode;
@@ -20,6 +21,9 @@ public class InfoDisplay extends NvComp {
     private BedrockNode largestFile;
     private BedrockNode smallestFile;
 
+    private float W;
+    private float H;
+
     private final Map<String, FileCategory> fileCategories = new HashMap<>(20);
     private List<FileCategory> sortedCategories;
 
@@ -28,6 +32,9 @@ public class InfoDisplay extends NvComp {
     public InfoDisplay(float x, float y, float w, float h, BedrockNode root) {
         super(x, y, w, h+10000);
         reset(root);
+        var ctx = NvContext.getInstance();
+        W = ctx.getRenderWidth()*0.015f;
+        H = ctx.getRenderHeight()*0.03f;
     }
 
     public void reset(BedrockNode newRoot) {
@@ -41,7 +48,7 @@ public class InfoDisplay extends NvComp {
         sortedChildren = new ArrayList<>(newRoot.children);
         sortedChildren.sort((a, b) -> Long.compare(b.totalSize, a.totalSize));
         maxFileNameLength = max;
-        rectW = max * 35;
+        rectW = max * NvContext.getInstance().getRenderWidth()*0.015f;
 
         largestFile = null;
         smallestFile = null;
@@ -62,7 +69,7 @@ public class InfoDisplay extends NvComp {
     }
 
     @SafeVarargs
-    private void forEachFile(BedrockNode node, Consumer<BedrockNode>... consumer) {
+    public static void forEachFile(BedrockNode node, Consumer<BedrockNode>... consumer) {
         for (BedrockNode child : node.children) {
             if (child.isDirectory) {
                 forEachFile(child, consumer);
@@ -79,7 +86,7 @@ public class InfoDisplay extends NvComp {
         g.drawLine(0, 70, rectW, 70, 5,1,1,1);
         float y = 50;
         for(BedrockNode child : sortedChildren) {
-            g.drawText(child.name + " ".repeat(maxFileNameLength + 2 - child.name.length()) +BedrockRenderer.formatByte(child.totalSize), 10, y += 70);
+            g.drawText(child.name + " ".repeat(maxFileNameLength + 2 - child.name.length()) +BedrockRenderer.formatByte(child.totalSize), 10, y += H);
         }
         if(largestFile == null || smallestFile == null)
             return;
@@ -89,7 +96,7 @@ public class InfoDisplay extends NvComp {
         g.drawText("Smallest file: " + smallestFile.name + " " + BedrockRenderer.formatByte(smallestFile.totalSize), 10, y);
 
         y = 0;
-        g.drawText("File categories by byte size: ", 10, y += 70);
+        g.drawText("File categories by byte size: ", 10, y += H);
         for(int i = 0; i < sortedCategories.size() && i < 200; i++) {
             var sizeCategory = sortedCategories.get(i);
             int combined = 31 * sizeCategory.extension.hashCode();
@@ -103,7 +110,7 @@ public class InfoDisplay extends NvComp {
             g.drawText(
                     sizeCategory.extension + " ".repeat(Math.max(5,maxFileNameLength + 2 - sizeCategory.extension.length())) + BedrockRenderer.formatByte(sizeCategory.totalSize) + " (" + sizeCategory.count + " files)",
                     rectW +300,
-                    y += 70
+                    y += H
             );
         }
     }

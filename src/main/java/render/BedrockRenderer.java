@@ -9,39 +9,49 @@ import scan.BedrockNode;
 import java.awt.*;
 import java.util.List;
 
-import static nv.core.errors.NvLogger.logInfo;
-
 public class BedrockRenderer extends NvComp implements Clickable {
     private final TopInfo info;
     private final TopInfo clickedInfo;
+    private final SearchBar searchBar;
+    private final SearchButton searchButton;
     private List<Rect> rects;
     private double viewPortW;
     private double viewPortH;
 
+    private BedrockNode root;
     private static final double MIN_RECT_SIZE_PX = 2;
 
     public BedrockRenderer(BedrockNode node) {
         var ctx = NvContext.getInstance();
         super(0,0,ctx.getRenderWidth(), ctx.getRenderHeight());
         info = new TopInfo(10,10);
-        clickedInfo = new TopInfo(10,100);
-        clickedInfo.setTextScale(0.5f);
-        clickedInfo.changeText(formatNode(node));
+        root = node;
+        var halfW = ctx.getRenderWidth()*0.5f;
+        clickedInfo = new TopInfo(10,ctx.getRenderHeight()*0.06f);
+        clickedInfo.setTextScale(0.6f);
+        clickedInfo.changeText(formatNode(node, root));
         info.changeText("Currently in: "+node.name + " | " + formatByte(node.totalSize));
+        searchBar = new SearchBar((int) (halfW/1.5f), -120, (int)(halfW/2), 70);
+        searchButton = new SearchButton(searchBar.getW()+searchBar.getX()+50, -120, halfW/6, 70, searchBar, root);
+        var researchRender = new SearchRender(0, -50000,4000, 49700);
+        addChild(searchBar);
+        addChild(searchButton);
+        addChild(researchRender);
         addChild(clickedInfo);
         addChild(info);
         rects = new TreemapLayout().layout(node, getX(), getY(), getW(), getH());
-        logInfo(rects.size());
         viewPortW = ctx.getRenderWidth();
         viewPortH = ctx.getRenderHeight();
     }
 
     public void reset(BedrockNode node){
         var ctx = NvContext.getInstance();
-        info.changeText(node.name);
+        info.changeText("Currently in: "+node.name + " | " + formatByte(node.totalSize));
         rects = new TreemapLayout().layout(node, getX(), getY(), getW(), getH());
         viewPortW = ctx.getRenderWidth();
         viewPortH = ctx.getRenderHeight();
+        root = node;
+        searchButton.setRoot(node);
     }
 
     @Override
@@ -58,6 +68,7 @@ public class BedrockRenderer extends NvComp implements Clickable {
                 g.drawRect(rect.x(), rect.y(), rect.w(), rect.h(), r, gr, b);
             }
         }
+
     }
 
     private boolean isInRendering(Rect rect, double viewportWidth, double viewportHeight) {
@@ -86,9 +97,10 @@ public class BedrockRenderer extends NvComp implements Clickable {
                 rectTop < camBottom && rectBottom > camY;
     }
 
-    private String formatNode(BedrockNode node){
+    public static String formatNode(BedrockNode node, BedrockNode root){
         return "|"+(node.isDirectory ? "DIR" : "FILE")+"|Name: " + node.name + " | ByteSize: " + formatByte(node.totalSize) +
-                (node.children == null ? "" : " | Inner files/dir: " + node.children.size());
+                ((node.children == null ? "" : " | Inner files/dir: " + node.children.size())
+                        + String.format(" | Ratio to %s directory: %f%%", root.name,((float)node.totalSize / (float)root.totalSize)*100f));
     }
     public static String formatByte(long byteSize) {
         if (byteSize < 1024) {
@@ -124,13 +136,11 @@ public class BedrockRenderer extends NvComp implements Clickable {
     public void onClick(int x, int y) {
         var transX = NvGraphic.camera.x + x / NvGraphic.camera.zoom;
         var transY = NvGraphic.camera.y + y / NvGraphic.camera.zoom;
-        boolean found = false;
         for(Rect r : rects){
             if(transX >= r.x() && transX <= r.x() + r.w() &&
                transY >= r.y() && transY <= r.y() + r.h()){
-                clickedInfo.changeText(formatNode(r.node()));
+                clickedInfo.changeText(formatNode(r.node(), root));
                 NvContext.markSceneDirty();
-
             }
         }
     }

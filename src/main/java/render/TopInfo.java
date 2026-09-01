@@ -1,15 +1,18 @@
 package render;
 
+import nv.core.NvContext;
 import nv.core.components.NvComp;
 import nv.core.graphic.NvGraphic;
 
 public class TopInfo extends NvComp {
     private String text;
     private float textScale = 1;
+    private float multiplier;
     private int len = 0;
     public TopInfo(float x, float y) {
         super(x,y,300,50);
         setHUD(true);
+        multiplier = NvContext.getInstance().getRenderWidth()*0.01f;
     }
 
     public void changeText(String newText){
@@ -23,12 +26,10 @@ public class TopInfo extends NvComp {
 
     @Override
     public void drawIntern(NvGraphic g) {
-        g.setRGB(0, 0, 0);
-        g.drawRoundRect(0,0,textScale*33*len, 80*textScale, 20);
         g.setRGB(1,1,1);
-        g.drawRoundRect(8,8,textScale*33*len - 8, textScale*80 - 8, 20);
+        g.drawRoundRect(8,8,textScale*multiplier*len - 8, textScale*multiplier*3 - 8, 20);
         g.setRGB(0,0,0);
-        g.drawText(text, 10,10, textScale);
+        g.drawText(text, multiplier, multiplier/2, textScale);
     }
 
     @Override
